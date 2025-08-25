@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log"
 	"net/http"
 	"os"
@@ -8,6 +9,9 @@ import (
 	"alsafwanmarine.com/todo-app/internal/database"
 	"alsafwanmarine.com/todo-app/internal/handlers"
 )
+
+//go:embed web/static
+var staticFiles embed.FS
 
 func main() {
 	// Initialize database
@@ -24,13 +28,22 @@ func main() {
 	http.HandleFunc("/", h.HomeHandler)
 	http.HandleFunc("/api/todos", h.TodosHandler)
 	http.HandleFunc("/api/todos/", h.TodoHandler)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+
+	// Serve embedded static files
+	staticFS, err := staticFiles.ReadDir("web/static")
+	if err != nil {
+		log.Fatal("Failed to read embedded static files:", err)
+	}
+	log.Printf("📁 Embedded static files: %d items", len(staticFS))
+
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFiles))))
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"
+		port = "8080"
 	}
 
 	log.Printf("🚀 Todo App starting on http://localhost:%s", port)
+	log.Printf("📦 Static files embedded in binary")
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

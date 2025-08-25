@@ -27,7 +27,7 @@ func (h *Handler) HomeHandler(w http.ResponseWriter, r *http.Request) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Al Safwan Marine - Todo App</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/web/static/css/style.css">
 </head>
 <body>
     <div class="container">
@@ -51,7 +51,7 @@ func (h *Handler) HomeHandler(w http.ResponseWriter, r *http.Request) {
         </div>
     </div>
 
-    <script src="/static/js/app.js"></script>
+    <script src="/static/web/static/js/app.js"></script>
 </body>
 </html>
 `
