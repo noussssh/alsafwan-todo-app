@@ -21,27 +21,83 @@ jobs:
       run: |
         go mod tidy
         GOOS=linux GOARCH=amd64 go build -o todo-app-linux main.go
+        echo "Build size: $(du -h todo-app-linux)"
 
-    - name: Copy app and static files to server
-      run: |
-        sudo apt-get update && sudo apt-get install -y sshpass rsync
-
-        # Copy binary
-        sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no todo-app-linux "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/"
-
-        # Copy static files using rsync
-        sshpass -p "${{ secrets.SERVER_PASSWORD }}" rsync -avz -e "ssh -o StrictHostKeyChecking=no" web/ "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/web/"
-
-    - name: Deploy and restart service
+    - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
+          set -e  # Exit on any error
+
           cd /home/alsafwan/alsafwanmarine-project/applications/site1/
-          sudo systemctl stop site1 || true
+
+          # Create backup of current binary
+          if [ -f site1 ]; then
+            echo "📦 Backing up current binary..."
+            cp site1 site1.backup.$(date +%Y%m%d_%H%M%S)
+          fi
+
+          echo "⏳ Waiting for new binary upload..."
+
+    - name: Upload new binary
+      run: |
+        # Install sshpass and use scp to copy the binary
+        sudo apt-get update && sudo apt-get install -y sshpass
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+          todo-app-linux \
+          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/todo-app-linux.new"
+
+    - name: Replace binary and restart service
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        script: |
+          set -e  # Exit on any error
+
+          cd /home/alsafwan/alsafwanmarine-project/applications/site1/
+
+          # Move new binary into place
+          echo "🔄 Replacing binary..."
+          mv todo-app-linux.new todo-app-linux
           chmod +x todo-app-linux
+
+          # Stop service
+          echo "🛑 Stopping site1 service..."
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl stop site1
+
+          # Replace binary
           cp todo-app-linux site1
-          sudo systemctl start site1
-          echo "✅ Todo App deployed with static files!"
+
+          # Start service
+          echo "🚀 Starting site1 service..."
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl start site1
+
+          # Wait for service to be ready
+          sleep 3
+
+          # Verify deployment
+          echo "✅ Verifying deployment..."
+          if curl -f -s http://localhost:8001/ > /dev/null; then
+            echo "✅ Deployment successful! Site is responding."
+
+            # Clean up old backups (keep last 5)
+            ls -t site1.backup.* 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || true
+          else
+            echo "❌ Deployment verification failed!"
+
+            # Rollback
+            echo "🔄 Rolling back to previous version..."
+            if [ -f site1.backup.* ]; then
+              latest_backup=$(ls -t site1.backup.* | head -1)
+              cp "$latest_backup" site1
+              echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl start site1
+              echo "✅ Rolled back to previous version"
+            fi
+            exit 1
+          fi
+
