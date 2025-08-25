@@ -22,31 +22,17 @@ jobs:
         go mod tidy
         GOOS=linux GOARCH=amd64 go build -o todo-app-linux main.go
 
-    - name: Deploy to Al Safwan Marine Server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        script: |
-          # Navigate to site1 directory
-          cd /home/alsafwan/alsafwanmarine-project/applications/site1/
-
-          # Stop current site1 service
-          sudo systemctl stop site1 || true
-
-          # Download the built app (we'll copy it via scp separately)
-          echo "🚀 Ready to receive new todo app..."
-
-    - name: Copy app to server
+    - name: Copy app and static files to server
       run: |
-        # Install sshpass for password authentication
-        sudo apt-get update && sudo apt-get install -y sshpass
+        sudo apt-get update && sudo apt-get install -y sshpass rsync
 
-        # Copy the Linux binary to server
+        # Copy binary
         sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no todo-app-linux "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/"
 
-    - name: Start new app
+        # Copy static files using rsync
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" rsync -avz -e "ssh -o StrictHostKeyChecking=no" web/ "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/web/"
+
+    - name: Deploy and restart service
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER_HOST }}
@@ -54,7 +40,8 @@ jobs:
         password: ${{ secrets.SERVER_PASSWORD }}
         script: |
           cd /home/alsafwan/alsafwanmarine-project/applications/site1/
+          sudo systemctl stop site1 || true
           chmod +x todo-app-linux
           cp todo-app-linux site1
           sudo systemctl start site1
-          echo "✅ Al Safwan Marine Todo App deployed successfully!"
+          echo "✅ Todo App deployed with static files!"
