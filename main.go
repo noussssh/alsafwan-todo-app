@@ -26,8 +26,6 @@ func main() {
 
 	// Routes
 	http.HandleFunc("/", h.HomeHandler)
-	http.HandleFunc("/api/todos", h.TodosHandler)
-	http.HandleFunc("/api/todos/", h.TodoHandler)
 
 	// Serve embedded static files
 	staticFS, err := staticFiles.ReadDir("web/static")
@@ -43,7 +41,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("🚀 Todo App starting on http://localhost:%s", port)
+	log.Printf("🚀 Hello Go App starting on http://localhost:%s", port)
 	log.Printf("📦 Static files embedded in binary")
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
