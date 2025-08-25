@@ -1,27 +1,28 @@
- name: Deploy Al Safwan Marine Todo App
+name: Deploy Al Safwan Marine Todo App
 
-  on:
-    push:
-      branches: [main]
+on:
+  push:
+    branches:
+      - main
 
-  jobs:
-    deploy:
-      runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-      steps:
-      - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
 
-      - name: Build for Linux
-        run: |
-          go mod tidy
-          GOOS=linux GOARCH=amd64 go build -o todo-app-linux main.go
+    - name: Build for Linux
+      run: |
+        go mod tidy
+        GOOS=linux GOARCH=amd64 go build -o todo-app-linux main.go
 
-      - name: Deploy to server
-        run: |
-          echo "🚀 Ready to deploy todo-app-linux to Al Safwan Marine server"
-          echo "✅ Build completed successfully"
+    - name: Deploy to server
+      run: |
+        echo "🚀 Ready to deploy todo-app-linux to Al Safwan Marine server"
+        echo "✅ Build completed successfully"
