@@ -1,0 +1,26 @@
+# Binaries
+  bin/
+  *.exe
+  todo-app
+  todo-app-linux
+
+  # Database files (we'll create fresh on server)
+  data/*.db
+  data/*.db-*
+
+  # Go build cache
+  .cache/
+
+  # IDE files
+  .vscode/
+  .idea/
+  *.swp
+  *.swo
+
+  # OS files
+  .DS_Store
+  Thumbs.db
+
+  # Logs
+  *.log
+  EOF
