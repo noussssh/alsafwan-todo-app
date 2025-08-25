@@ -15,14 +15,25 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.25'
 
     - name: Build for Linux
       run: |
         go mod tidy
         GOOS=linux GOARCH=amd64 go build -o todo-app-linux main.go
 
-    - name: Deploy to server
-      run: |
-        echo "🚀 Ready to deploy todo-app-linux to Al Safwan Marine server"
-        echo "✅ Build completed successfully"
+    - name: Deploy to Al Safwan Marine Server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        source: "todo-app-linux"
+        target: "/home/alsafwan/alsafwanmarine-project/applications/site1/"
+        script: |
+          cd /home/alsafwan/alsafwanmarine-project/applications/site1/
+          chmod +x todo-app-linux
+          sudo systemctl stop site1 || true
+          cp todo-app-linux site1
+          sudo systemctl start site1
+          echo "🚀 Al Safwan Marine Todo App deployed successfully!"
