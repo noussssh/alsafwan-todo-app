@@ -1,8 +1,8 @@
-name: Deploy Al Safwan Marine Todo App
+ name: Deploy Al Safwan Marine Todo App
 
   on:
     push:
-      branches: [ main ]
+      branches: [main]
 
   jobs:
     deploy:
