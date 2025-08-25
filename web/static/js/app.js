@@ -13,8 +13,14 @@ class TodoApp {
     async loadTodos() {
         try {
             const response = await fetch('/api/todos');
-            this.todos = await response.json();
-            this.renderTodos();
+            if (response.ok) {
+                const data = await response.json();
+                // Handle null/empty response properly
+                this.todos = data || [];
+                this.renderTodos();
+            } else {
+                throw new Error(`HTTP ${response.status}`);
+            }
         } catch (error) {
             console.error('Failed to load todos:', error);
             this.showError('Failed to load todos');
