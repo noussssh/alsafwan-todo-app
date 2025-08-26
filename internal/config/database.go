@@ -1,7 +1,6 @@
 package config
 
 import (
-	"database/sql"
 	"time"
 
 	"alsafwanmarine.com/todo-app/internal/models"

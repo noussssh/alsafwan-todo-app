@@ -61,6 +61,12 @@ func PerformanceLogger() gin.HandlerFunc {
 // HealthCheck provides a health check endpoint with performance metrics
 func HealthCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Calculate slow request ratio safely
+		var slowRatio float64
+		if metrics.RequestCount > 0 {
+			slowRatio = float64(metrics.SlowRequestCount) / float64(metrics.RequestCount)
+		}
+
 		c.JSON(200, gin.H{
 			"status": "healthy",
 			"timestamp": time.Now().Format(time.RFC3339),
@@ -69,7 +75,7 @@ func HealthCheck() gin.HandlerFunc {
 				"average_response":   metrics.AverageResponse.String(),
 				"slow_requests":      metrics.SlowRequestCount,
 				"error_count":        metrics.ErrorCount,
-				"slow_request_ratio": float64(metrics.SlowRequestCount) / float64(metrics.RequestCount),
+				"slow_request_ratio": slowRatio,
 			},
 			"memory": getMemoryUsage(),
 		})

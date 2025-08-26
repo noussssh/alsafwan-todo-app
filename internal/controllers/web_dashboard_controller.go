@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"alsafwanmarine.com/todo-app/internal/middleware"
-	"alsafwanmarine.com/todo-app/internal/models"
 	"alsafwanmarine.com/todo-app/internal/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -47,12 +46,6 @@ func (dc *WebDashboardController) ShowDashboard(c *gin.Context) {
 			tx.Rollback()
 		}
 	}()
-	
-	// Batch all count queries for better performance
-	var results []struct {
-		QueryType string
-		Count     int64
-	}
 	
 	// Execute optimized count queries using indexes
 	queries := []struct {
