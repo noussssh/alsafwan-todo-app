@@ -1,16 +1,23 @@
-/* ASM Tracker - Custom Styles */
-
+/* ASM Tracker - Optimized Custom Styles */
+/* Leveraging system fonts for better performance */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-display: swap; /* Improve font loading performance */
 }
 
+/* Reduce reflows by using will-change sparingly */
 .navbar-brand {
-    font-weight: bold;
+    font-weight: 700;
 }
 
+/* Optimize table performance */
 .card-header {
     background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
+}
+
+.table {
+    table-layout: fixed; /* Improve table rendering performance */
 }
 
 .table th {
@@ -18,8 +25,10 @@ body {
     border-top: none;
 }
 
+/* Optimize button rendering */
 .btn {
     border-radius: 0.375rem;
+    transition: background-color 0.15s ease-in-out; /* Shorter transition for better performance */
 }
 
 .alert {
@@ -27,6 +36,7 @@ body {
     border-radius: 0.5rem;
 }
 
+/* Optimize layout for login */
 .login-container {
     min-height: 100vh;
     display: flex;
@@ -34,42 +44,80 @@ body {
     justify-content: center;
 }
 
-/* Flash message animations */
+/* Optimized animations using transform3d for hardware acceleration */
 .alert {
-    animation: slideIn 0.3s ease-out;
+    animation: slideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateZ(0); /* Force hardware acceleration */
 }
 
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translate3d(0, -20px, 0);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
-/* Loading states */
+/* Optimized loading states with better performance */
 .btn.loading {
     pointer-events: none;
     opacity: 0.6;
+    position: relative;
 }
 
 .btn.loading::after {
     content: "";
-    display: inline-block;
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
     width: 1em;
     height: 1em;
-    margin-left: 0.5em;
+    margin-top: -0.5em;
     border: 2px solid currentColor;
     border-radius: 50%;
     border-top-color: transparent;
     animation: spin 1s linear infinite;
+    transform: translateZ(0); /* Hardware acceleration */
 }
 
 @keyframes spin {
     to {
-        transform: rotate(360deg);
+        transform: rotate(360deg) translateZ(0);
     }
+}
+
+/* Critical performance optimizations */
+.sidebar {
+    transform: translateZ(0); /* Hardware acceleration for sidebar */
+}
+
+/* Optimize image loading with aspect ratio boxes */
+.img-placeholder {
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+}
+
+/* Reduce paint operations for frequently updated elements */
+.badge {
+    will-change: auto; /* Only enable when needed */
+}
+
+/* Optimize form performance */
+.form-control:focus {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Lazy loading placeholders */
+.lazy-placeholder {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }

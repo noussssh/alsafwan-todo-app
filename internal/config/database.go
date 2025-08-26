@@ -1,6 +1,9 @@
 package config
 
 import (
+	"database/sql"
+	"time"
+
 	"alsafwanmarine.com/todo-app/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -12,16 +15,38 @@ type Database struct {
 }
 
 func NewDatabase(dbPath string) (*Database, error) {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+	// Configure SQLite with performance optimizations
+	dsn := dbPath + "?_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=temp_store(MEMORY)&_pragma=mmap_size(268435456)&_pragma=foreign_keys(ON)&_pragma=cache_size(-64000)"
+	
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent), // Reduce logging overhead in production
+		PrepareStmt: true, // Enable prepared statement cache
+		DisableForeignKeyConstraintWhenMigrating: false,
 	})
 	if err != nil {
 		return nil, err
 	}
 	
+	// Get the underlying SQL database to configure connection pool
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+	
+	// Configure connection pool for better performance
+	sqlDB.SetMaxOpenConns(25)                 // Maximum number of open connections
+	sqlDB.SetMaxIdleConns(25)                 // Maximum number of idle connections
+	sqlDB.SetConnMaxLifetime(5 * time.Minute) // Maximum lifetime of a connection
+	sqlDB.SetConnMaxIdleTime(time.Minute)     // Maximum idle time for a connection
+	
 	database := &Database{DB: db}
 	
 	if err := database.migrate(); err != nil {
+		return nil, err
+	}
+	
+	// Create indexes for better query performance
+	if err := database.createIndexes(); err != nil {
 		return nil, err
 	}
 	
@@ -35,6 +60,30 @@ func (d *Database) migrate() error {
 		&models.UserActivity{},
 		&models.PasswordResetEvent{},
 	)
+}
+
+func (d *Database) createIndexes() error {
+	// Performance-critical indexes for common queries
+	indexes := []string{
+		"CREATE INDEX IF NOT EXISTS idx_users_email_enabled ON users(email, enabled);",
+		"CREATE INDEX IF NOT EXISTS idx_users_role_enabled ON users(role, enabled);",
+		"CREATE INDEX IF NOT EXISTS idx_users_enabled_created_at ON users(enabled, created_at DESC);",
+		"CREATE INDEX IF NOT EXISTS idx_sessions_user_id_expires_at ON sessions(user_id, expires_at);",
+		"CREATE INDEX IF NOT EXISTS idx_sessions_token_expires_at ON sessions(token, expires_at);",
+		"CREATE INDEX IF NOT EXISTS idx_user_activities_user_id_performed_at ON user_activities(user_id, performed_at DESC);",
+		"CREATE INDEX IF NOT EXISTS idx_user_activities_type_performed_at ON user_activities(activity_type, performed_at DESC);",
+		"CREATE INDEX IF NOT EXISTS idx_user_activities_performed_at ON user_activities(performed_at DESC);",
+		"CREATE INDEX IF NOT EXISTS idx_password_reset_events_user_id ON password_reset_events(user_id, created_at DESC);",
+		"CREATE INDEX IF NOT EXISTS idx_password_reset_events_expires_at ON password_reset_events(expires_at);",
+	}
+
+	for _, index := range indexes {
+		if err := d.DB.Exec(index).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (d *Database) Seed() error {

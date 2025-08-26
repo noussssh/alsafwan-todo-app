@@ -4,31 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}} - ASM Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Resource hints for performance -->
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    
+    <!-- Critical CSS inlined to prevent render blocking -->
     <style>
-        .sidebar {
-            min-height: 100vh;
-            background-color: #343a40;
+        /* Critical above-the-fold styles */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; 
+            background-color: #f8f9fa; 
         }
-        .sidebar .nav-link {
-            color: #adb5bd;
+        .sidebar { 
+            min-height: 100vh; 
+            background-color: #343a40; 
         }
-        .sidebar .nav-link:hover {
-            color: #fff;
+        .main-content { 
+            background-color: #f8f9fa; 
+            min-height: 100vh; 
         }
-        .sidebar .nav-link.active {
-            color: #fff;
-            background-color: #495057;
+        .navbar-brand { 
+            font-weight: 700; 
         }
-        .main-content {
-            background-color: #f8f9fa;
-            min-height: 100vh;
-        }
-        .navbar-brand {
-            font-weight: bold;
+        .login-container { 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
         }
     </style>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></noscript>
+    
+    <!-- Load Font Awesome asynchronously -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <!-- Custom CSS loaded asynchronously -->
+    <link href="/static/css/app.css" rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link href="/static/css/app.css" rel="stylesheet"></noscript>
 </head>
 <body>
     <div class="container-fluid">
@@ -113,25 +133,70 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Preload JavaScript for better performance -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" as="script">
+    <link rel="preload" href="/static/js/app.js" as="script">
+    
+    <!-- Load JavaScript asynchronously -->
+    <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="/static/js/app.js"></script>
+    
+    <!-- Critical inline JavaScript for immediate functionality -->
     <script>
-        // Auto-hide flash messages after 5 seconds
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
+        (function() {
+            // Performance observer for Core Web Vitals
+            if ('PerformanceObserver' in window) {
+                const po = new PerformanceObserver((list) => {
+                    for (const entry of list.getEntries()) {
+                        if (entry.entryType === 'largest-contentful-paint') {
+                            console.log('LCP:', entry.startTime);
+                        }
+                        if (entry.entryType === 'first-input') {
+                            console.log('FID:', entry.processingStart - entry.startTime);
+                        }
+                        if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
+                            console.log('CLS:', entry.value);
+                        }
+                    }
+                });
+                
+                po.observe({entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift']});
+            }
 
-        // Confirm delete actions
-        document.querySelectorAll('[data-confirm]').forEach(function(element) {
-            element.addEventListener('click', function(e) {
-                if (!confirm(this.getAttribute('data-confirm'))) {
-                    e.preventDefault();
+            // Optimized DOM ready function
+            function domReady(fn) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', fn);
+                } else {
+                    fn();
                 }
+            }
+
+            // Auto-hide flash messages after 5 seconds
+            domReady(function() {
+                setTimeout(function() {
+                    const alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(function(alert) {
+                        if (window.bootstrap && bootstrap.Alert) {
+                            const bsAlert = new bootstrap.Alert(alert);
+                            bsAlert.close();
+                        } else {
+                            alert.style.opacity = '0';
+                            setTimeout(() => alert.remove(), 300);
+                        }
+                    });
+                }, 5000);
+
+                // Confirm delete actions
+                document.querySelectorAll('[data-confirm]').forEach(function(element) {
+                    element.addEventListener('click', function(e) {
+                        if (!confirm(this.getAttribute('data-confirm'))) {
+                            e.preventDefault();
+                        }
+                    });
+                });
             });
-        });
+        })();
     </script>
 </body>
 </html>

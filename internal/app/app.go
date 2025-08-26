@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"alsafwanmarine.com/todo-app/internal/cache"
 	"alsafwanmarine.com/todo-app/internal/config"
 	"alsafwanmarine.com/todo-app/internal/controllers"
 	"alsafwanmarine.com/todo-app/internal/middleware"
@@ -18,10 +19,12 @@ import (
 
 type Application struct {
 	Database             *config.Database
+	Cache               *cache.Cache
 	AuthService          *services.AuthService
 	SessionService       *services.SessionService
 	ActivityService      *services.ActivityService
 	PasswordResetService *services.PasswordResetService
+	CachedStatsService   *services.CachedStatsService
 	
 	WebAuthController      *controllers.WebAuthController
 	WebDashboardController *controllers.WebDashboardController
@@ -40,10 +43,14 @@ func New(dbPath string, templatesFS, staticFS embed.FS) (*Application, error) {
 		return nil, err
 	}
 	
+	// Initialize cache with 5-minute cleanup interval
+	appCache := cache.New(5 * time.Minute)
+	
 	sessionService := services.NewSessionService(database.DB)
 	activityService := services.NewActivityService(database.DB)
 	passwordResetService := services.NewPasswordResetService(database.DB, activityService)
 	authService := services.NewAuthService(database.DB, sessionService, activityService)
+	cachedStatsService := services.NewCachedStatsService(database.DB, appCache)
 	
 	webAuthController := controllers.NewWebAuthController(authService)
 	webDashboardController := controllers.NewWebDashboardController(database.DB, activityService)
@@ -54,10 +61,12 @@ func New(dbPath string, templatesFS, staticFS embed.FS) (*Application, error) {
 	
 	app := &Application{
 		Database:                database,
+		Cache:                   appCache,
 		AuthService:             authService,
 		SessionService:          sessionService,
 		ActivityService:         activityService,
 		PasswordResetService:    passwordResetService,
+		CachedStatsService:      cachedStatsService,
 		WebAuthController:       webAuthController,
 		WebDashboardController:  webDashboardController,
 		WebUserController:       webUserController,
@@ -104,6 +113,10 @@ func (app *Application) SetupRoutes(r *gin.Engine) {
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(middleware.PerformanceLogger())
+	r.Use(middleware.RequestSizeLimit(10 << 20)) // 10MB limit
+	r.Use(middleware.Gzip(middleware.DefaultCompression))
+	r.Use(middleware.StaticFileHeaders())
 	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.InputSanitizer())
 	r.Use(app.WebMiddleware.FlashMessages())
@@ -144,10 +157,11 @@ func (app *Application) SetupRoutes(r *gin.Engine) {
 		}
 	}
 
-	// Health check
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
+	// Health check with performance metrics
+	r.GET("/health", middleware.HealthCheck())
+	
+	// Performance metrics endpoint (could be restricted in production)
+	r.GET("/metrics", middleware.HealthCheck())
 }
 
 func (app *Application) startBackgroundTasks() {
@@ -170,5 +184,8 @@ func (app *Application) startBackgroundTasks() {
 }
 
 func (app *Application) Close() error {
+	if app.Cache != nil {
+		app.Cache.Close()
+	}
 	return app.Database.Close()
 }

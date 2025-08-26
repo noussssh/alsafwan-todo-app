@@ -33,43 +33,80 @@ func (uc *WebUserController) ListUsers(c *gin.Context) {
 		return
 	}
 
-	// Get search/filter parameters
+	// Get search/filter parameters with pagination
 	searchQuery := c.Query("search")
 	filterRole := c.Query("role")
 	filterStatus := c.Query("status")
+	
+	// Pagination parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if page < 1 {
+		page = 1
+	}
+	limit := 20 // Users per page
+	offset := (page - 1) * limit
 
 	var users []models.User
-	query := uc.db
+	var totalUsers int64
+	
+	// Start with base query and count
+	query := uc.db.Model(&models.User{})
+	countQuery := uc.db.Model(&models.User{})
 
 	// Apply role-based filtering
 	if currentUser.Role == models.RoleManager {
 		query = query.Where("role = ?", models.RoleSalesperson)
+		countQuery = countQuery.Where("role = ?", models.RoleSalesperson)
 	}
 
-	// Apply search filter
+	// Apply search filter (optimized with index)
 	if searchQuery != "" {
-		query = query.Where("name ILIKE ? OR email ILIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%")
+		searchCondition := "name LIKE ? OR email LIKE ?"
+		searchParam := "%" + searchQuery + "%"
+		query = query.Where(searchCondition, searchParam, searchParam)
+		countQuery = countQuery.Where(searchCondition, searchParam, searchParam)
 	}
 
 	// Apply role filter
 	if filterRole != "" {
 		if role, err := strconv.Atoi(filterRole); err == nil {
 			query = query.Where("role = ?", role)
+			countQuery = countQuery.Where("role = ?", role)
 		}
 	}
 
-	// Apply status filter
+	// Apply status filter (uses index)
 	if filterStatus == "enabled" {
 		query = query.Where("enabled = ?", true)
+		countQuery = countQuery.Where("enabled = ?", true)
 	} else if filterStatus == "disabled" {
 		query = query.Where("enabled = ?", false)
+		countQuery = countQuery.Where("enabled = ?", false)
 	}
 
-	if err := query.Order("created_at DESC").Find(&users).Error; err != nil {
+	// Get total count for pagination
+	if err := countQuery.Count(&totalUsers).Error; err != nil {
+		middleware.SetFlashError(c, "Failed to count users")
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	// Get users with pagination, select only needed fields for list view
+	if err := query.
+		Select("id, name, email, role, company, enabled, created_at, last_sign_in_at").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&users).Error; err != nil {
 		middleware.SetFlashError(c, "Failed to load users")
 		c.Redirect(http.StatusFound, "/")
 		return
 	}
+
+	// Calculate pagination info
+	totalPages := int((totalUsers + int64(limit) - 1) / int64(limit))
+	hasNext := page < totalPages
+	hasPrev := page > 1
 
 	data := gin.H{
 		"Title":        "User Management",
@@ -79,6 +116,15 @@ func (uc *WebUserController) ListUsers(c *gin.Context) {
 		"SearchQuery":  searchQuery,
 		"FilterRole":   filterRole,
 		"FilterStatus": filterStatus,
+		"Pagination": gin.H{
+			"CurrentPage": page,
+			"TotalPages":  totalPages,
+			"TotalUsers":  totalUsers,
+			"HasNext":     hasNext,
+			"HasPrev":     hasPrev,
+			"NextPage":    page + 1,
+			"PrevPage":    page - 1,
+		},
 	}
 
 	c.HTML(http.StatusOK, "base.html", data)

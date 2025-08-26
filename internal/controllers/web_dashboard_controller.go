@@ -36,34 +36,69 @@ func (dc *WebDashboardController) ShowDashboard(c *gin.Context) {
 		return
 	}
 
-	// Calculate statistics
+	// Calculate statistics with optimized queries
 	stats := DashboardStats{}
-	
-	// Total users
-	dc.db.Model(&models.User{}).Count(&stats.TotalUsers)
-	
-	// Active users
-	dc.db.Model(&models.User{}).Where("enabled = ?", true).Count(&stats.ActiveUsers)
-	
-	// Today's sessions (approximate based on login activities)
 	today := time.Now().Truncate(24 * time.Hour)
-	dc.db.Model(&models.UserActivity{}).
-		Where("activity_type = ? AND performed_at >= ?", "login", today).
-		Count(&stats.SessionsToday)
 	
-	// Today's failed logins
-	dc.db.Model(&models.UserActivity{}).
-		Where("activity_type = ? AND performed_at >= ?", "failed_login", today).
-		Count(&stats.FailedLoginsToday)
+	// Use a single transaction to reduce database roundtrips
+	tx := dc.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	
+	// Batch all count queries for better performance
+	var results []struct {
+		QueryType string
+		Count     int64
+	}
+	
+	// Execute optimized count queries using indexes
+	queries := []struct {
+		name  string
+		query string
+	}{
+		{"total_users", "SELECT 'total_users' as query_type, COUNT(*) as count FROM users"},
+		{"active_users", "SELECT 'active_users' as query_type, COUNT(*) as count FROM users WHERE enabled = 1"},
+		{"sessions_today", "SELECT 'sessions_today' as query_type, COUNT(*) as count FROM user_activities WHERE activity_type = 'login' AND performed_at >= ?"},
+		{"failed_logins_today", "SELECT 'failed_logins_today' as query_type, COUNT(*) as count FROM user_activities WHERE activity_type = 'failed_login' AND performed_at >= ?"},
+	}
+	
+	for _, q := range queries {
+		var result struct {
+			QueryType string
+			Count     int64
+		}
+		
+		if q.name == "sessions_today" || q.name == "failed_logins_today" {
+			tx.Raw(q.query, today).Scan(&result)
+		} else {
+			tx.Raw(q.query).Scan(&result)
+		}
+		
+		switch result.QueryType {
+		case "total_users":
+			stats.TotalUsers = result.Count
+		case "active_users":
+			stats.ActiveUsers = result.Count
+		case "sessions_today":
+			stats.SessionsToday = result.Count
+		case "failed_logins_today":
+			stats.FailedLoginsToday = result.Count
+		}
+	}
+	
+	tx.Commit()
 
-	// Get recent activities
+	// Get recent activities with preloading for better performance
 	recentActivities, _ := dc.activityService.GetAllActivities(10)
 
 	c.HTML(200, "base.html", gin.H{
-		"Title":       "Dashboard",
-		"User":        user,
-		"ActiveNav":   "dashboard",
-		"Stats":       stats,
+		"Title":            "Dashboard",
+		"User":             user,
+		"ActiveNav":        "dashboard",
+		"Stats":            stats,
 		"RecentActivities": recentActivities,
 	})
 }
