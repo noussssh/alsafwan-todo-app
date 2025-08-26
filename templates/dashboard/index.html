@@ -1,0 +1,206 @@
+{{define "content"}}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Users
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.TotalUsers}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Active Users
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.ActiveUsers}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Login Sessions Today
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.SessionsToday}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-sign-in-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Failed Logins (24h)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.FailedLoginsToday}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activity -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-history"></i> Recent Activity
+                </h6>
+            </div>
+            <div class="card-body">
+                {{if .RecentActivities}}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Activity</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .RecentActivities}}
+                            <tr>
+                                <td><small>{{.PerformedAt.Format "Jan 02, 15:04"}}</small></td>
+                                <td>
+                                    {{if .User}}
+                                        <small>{{.User.Name}}</small>
+                                    {{else}}
+                                        <small class="text-muted">Unknown</small>
+                                    {{end}}
+                                </td>
+                                <td>
+                                    <small>
+                                        {{if eq .ActivityType "login"}}
+                                            <span class="badge bg-success">Login</span>
+                                        {{else if eq .ActivityType "logout"}}
+                                            <span class="badge bg-secondary">Logout</span>
+                                        {{else if eq .ActivityType "failed_login"}}
+                                            <span class="badge bg-danger">Failed Login</span>
+                                        {{else if eq .ActivityType "password_change"}}
+                                            <span class="badge bg-warning">Password Change</span>
+                                        {{else}}
+                                            <span class="badge bg-info">{{.ActivityType}}</span>
+                                        {{end}}
+                                    </small>
+                                </td>
+                                <td><small class="text-muted">{{.IPAddress}}</small></td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/activities" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> View All Activities
+                    </a>
+                </div>
+                {{else}}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-history fa-3x mb-3"></i>
+                    <p>No recent activity to display</p>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & User Info -->
+    <div class="col-lg-4 mb-4">
+        <!-- User Profile Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-user"></i> Your Profile
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle fa-5x text-gray-400"></i>
+                </div>
+                <h5>{{.User.Name}}</h5>
+                <p class="text-muted">{{.User.Email}}</p>
+                <span class="badge bg-{{if eq .User.Role 0}}danger{{else if eq .User.Role 1}}warning{{else}}info{{end}}">
+                    {{if eq .User.Role 0}}Administrator{{else if eq .User.Role 1}}Manager{{else}}Salesperson{{end}}
+                </span>
+                {{if .User.Company}}
+                <p class="text-muted mt-2">
+                    <i class="fas fa-building"></i> {{.User.Company}}
+                </p>
+                {{end}}
+                <div class="mt-3">
+                    <a href="/profile" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {{if or (eq .User.Role 0) (eq .User.Role 1)}}
+                    <a href="/users/new" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-user-plus"></i> Add New User
+                    </a>
+                    <a href="/users" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                    {{end}}
+                    <a href="/profile/password" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-key"></i> Change Password
+                    </a>
+                    {{if or (eq .User.Role 0) (eq .User.Role 1)}}
+                    <a href="/activities" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-history"></i> View Activity Log
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

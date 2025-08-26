@@ -1,0 +1,225 @@
+{{define "content"}}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-{{if .IsEdit}}edit{{else}}user-plus{{end}}"></i> 
+                    {{if .IsEdit}}Edit User{{else}}Create New User{{end}}
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{if .IsEdit}}/users/{{.EditUser.ID}}{{else}}/users{{end}}">
+                    {{if .IsEdit}}
+                        <input type="hidden" name="_method" value="PUT">
+                    {{end}}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user"></i> Full Name *
+                                </label>
+                                <input type="text" class="form-control {{if .Errors.Name}}is-invalid{{end}}" 
+                                       id="name" name="name" value="{{if .IsEdit}}{{.EditUser.Name}}{{else}}{{.FormData.Name}}{{end}}" 
+                                       required minlength="2" maxlength="100">
+                                {{if .Errors.Name}}
+                                    <div class="invalid-feedback">{{.Errors.Name}}</div>
+                                {{end}}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope"></i> Email Address *
+                                </label>
+                                <input type="email" class="form-control {{if .Errors.Email}}is-invalid{{end}}" 
+                                       id="email" name="email" value="{{if .IsEdit}}{{.EditUser.Email}}{{else}}{{.FormData.Email}}{{end}}" 
+                                       required>
+                                {{if .Errors.Email}}
+                                    <div class="invalid-feedback">{{.Errors.Email}}</div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="role" class="form-label">
+                                    <i class="fas fa-shield-alt"></i> Role *
+                                </label>
+                                <select class="form-select {{if .Errors.Role}}is-invalid{{end}}" id="role" name="role" required>
+                                    <option value="">Select Role</option>
+                                    {{if eq .User.Role 0}}
+                                        <option value="0" {{if and .IsEdit (eq .EditUser.Role 0)}}selected{{else if and (not .IsEdit) (eq .FormData.Role "0")}}selected{{end}}>Administrator</option>
+                                        <option value="1" {{if and .IsEdit (eq .EditUser.Role 1)}}selected{{else if and (not .IsEdit) (eq .FormData.Role "1")}}selected{{end}}>Manager</option>
+                                    {{end}}
+                                    <option value="2" {{if and .IsEdit (eq .EditUser.Role 2)}}selected{{else if and (not .IsEdit) (eq .FormData.Role "2")}}selected{{end}}>Salesperson</option>
+                                </select>
+                                {{if .Errors.Role}}
+                                    <div class="invalid-feedback">{{.Errors.Role}}</div>
+                                {{end}}
+                                {{if eq .User.Role 1}}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle"></i> As a manager, you can only create salespeople.
+                                    </div>
+                                {{end}}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company" class="form-label">
+                                    <i class="fas fa-building"></i> Company
+                                </label>
+                                <select class="form-select {{if .Errors.Company}}is-invalid{{end}}" id="company" name="company">
+                                    <option value="">Select Company (Optional)</option>
+                                    {{$currentCompany := ""}}
+                                    {{if .IsEdit}}{{$currentCompany = .EditUser.Company}}{{else}}{{$currentCompany = .FormData.Company}}{{end}}
+                                    
+                                    <option value="Al Safwan Marine" {{if and $currentCompany (eq $currentCompany "Al Safwan Marine")}}selected{{end}}>Al Safwan Marine</option>
+                                    <option value="Louis Safety" {{if and $currentCompany (eq $currentCompany "Louis Safety")}}selected{{end}}>Louis Safety</option>
+                                    <option value="Data Grid Labs" {{if and $currentCompany (eq $currentCompany "Data Grid Labs")}}selected{{end}}>Data Grid Labs</option>
+                                </select>
+                                {{if .Errors.Company}}
+                                    <div class="invalid-feedback">{{.Errors.Company}}</div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{if not .IsEdit}}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock"></i> Password *
+                                </label>
+                                <input type="password" class="form-control {{if .Errors.Password}}is-invalid{{end}}" 
+                                       id="password" name="password" required minlength="6">
+                                {{if .Errors.Password}}
+                                    <div class="invalid-feedback">{{.Errors.Password}}</div>
+                                {{end}}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> Minimum 6 characters
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password_confirm" class="form-label">
+                                    <i class="fas fa-lock"></i> Confirm Password *
+                                </label>
+                                <input type="password" class="form-control {{if .Errors.PasswordConfirm}}is-invalid{{end}}" 
+                                       id="password_confirm" name="password_confirm" required minlength="6">
+                                {{if .Errors.PasswordConfirm}}
+                                    <div class="invalid-feedback">{{.Errors.PasswordConfirm}}</div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="enabled" name="enabled" value="true"
+                                           {{if .IsEdit}}{{if .EditUser.Enabled}}checked{{end}}{{else}}checked{{end}}>
+                                    <label class="form-check-label" for="enabled">
+                                        <i class="fas fa-toggle-on"></i> Account is active/enabled
+                                    </label>
+                                </div>
+                                {{if and .IsEdit (or (eq .EditUser.Role 0) (eq .EditUser.Role 1))}}
+                                <div class="form-text text-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> Note: Admin and Manager accounts cannot be disabled.
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle"></i> Additional Information
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="card-text">
+                                        <strong>Password Policy:</strong><br>
+                                        <small class="text-muted">
+                                            • Minimum 6 characters<br>
+                                            • Passwords expire after 30 days<br>
+                                            • Users will be prompted to change expired passwords
+                                        </small>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="card-text">
+                                        <strong>Role Permissions:</strong><br>
+                                        <small class="text-muted">
+                                            • <strong>Admin:</strong> Full system access<br>
+                                            • <strong>Manager:</strong> Manage salespeople only<br>
+                                            • <strong>Salesperson:</strong> Limited access
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/users" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Users
+                        </a>
+                        <div>
+                            {{if .IsEdit}}
+                            <a href="/users/{{.EditUser.ID}}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-eye"></i> View User
+                            </a>
+                            {{end}}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{if .IsEdit}}Update User{{else}}Create User{{end}}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password confirmation validation
+document.getElementById('password_confirm')?.addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirm = this.value;
+    
+    if (password !== confirm) {
+        this.setCustomValidity('Passwords do not match');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Disable enabled checkbox for admin/manager roles if editing
+{{if .IsEdit}}
+const roleSelect = document.getElementById('role');
+const enabledCheckbox = document.getElementById('enabled');
+
+function toggleEnabledCheckbox() {
+    const selectedRole = roleSelect.value;
+    if (selectedRole === '0' || selectedRole === '1') {
+        enabledCheckbox.checked = true;
+        enabledCheckbox.disabled = true;
+    } else {
+        enabledCheckbox.disabled = false;
+    }
+}
+
+roleSelect.addEventListener('change', toggleEnabledCheckbox);
+toggleEnabledCheckbox(); // Run on page load
+{{end}}
+</script>
+{{end}}
