@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,6 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+//go:embed templates
+var templatesFS embed.FS
+
+//go:embed static
+var staticFS embed.FS
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -55,7 +62,7 @@ func main() {
 		log.Printf("Data directory is writable")
 	}
 	
-	application, err := app.New(dbPath)
+	application, err := app.New(dbPath, templatesFS, staticFS)
 	if err != nil {
 		log.Fatalf("Failed to initialize application: %v", err)
 	}

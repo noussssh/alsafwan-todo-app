@@ -1,9 +1,11 @@
 package app
 
 import (
+	"embed"
+	"html/template"
+	"io/fs"
 	"log"
-	"os"
-	"path/filepath"
+	"net/http"
 	"time"
 
 	"alsafwanmarine.com/todo-app/internal/config"
@@ -27,9 +29,12 @@ type Application struct {
 	
 	AuthMiddleware *middleware.AuthMiddleware
 	WebMiddleware  *middleware.WebMiddleware
+	
+	templatesFS embed.FS
+	staticFS    embed.FS
 }
 
-func New(dbPath string) (*Application, error) {
+func New(dbPath string, templatesFS, staticFS embed.FS) (*Application, error) {
 	database, err := config.NewDatabase(dbPath)
 	if err != nil {
 		return nil, err
@@ -58,6 +63,8 @@ func New(dbPath string) (*Application, error) {
 		WebUserController:       webUserController,
 		AuthMiddleware:          authMiddleware,
 		WebMiddleware:           webMiddleware,
+		templatesFS:             templatesFS,
+		staticFS:                staticFS,
 	}
 	
 	if err := database.Seed(); err != nil {
@@ -70,32 +77,30 @@ func New(dbPath string) (*Application, error) {
 }
 
 func (app *Application) SetupRoutes(r *gin.Engine) {
-	// Try to load HTML templates, but don't fail if they don't exist
-	templatePattern := "templates/**/*.html"
-	if _, err := os.Stat("./templates"); err == nil {
-		// Templates directory exists, try to load templates
-		// Use a more comprehensive search to check if any templates exist
-		matches, err := filepath.Glob("templates/*/*.html")
-		if err == nil && len(matches) > 0 {
-			r.LoadHTMLGlob(templatePattern)
-			log.Printf("Loaded template files from templates directory")
-		} else {
-			log.Printf("Templates directory exists but no HTML files found")
+	// Load embedded templates
+	templ := template.Must(template.New("").ParseFS(app.templatesFS, "templates/**/*.html"))
+	r.SetHTMLTemplate(templ)
+	log.Printf("Loaded embedded template files")
+	
+	// Serve embedded static files
+	staticSubFS, err := fs.Sub(app.staticFS, "static")
+	if err != nil {
+		log.Printf("Warning: Could not create static file system: %v", err)
+	} else {
+		r.StaticFS("/static", http.FS(staticSubFS))
+		log.Printf("Serving embedded static files")
+	}
+	
+	// Serve favicon from embedded files
+	r.GET("/favicon.ico", func(c *gin.Context) {
+		data, err := app.staticFS.ReadFile("static/favicon.ico")
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
 		}
-	} else {
-		log.Printf("Templates directory not found: %v", err)
-	}
-	
-	// Try to serve static files, but don't fail if directory doesn't exist
-	if _, err := os.Stat("./static"); err == nil {
-		r.Static("/static", "./static")
-	} else {
-		log.Printf("Static directory not found: %v", err)
-	}
-	
-	if _, err := os.Stat("./static/favicon.ico"); err == nil {
-		r.StaticFile("/favicon.ico", "./static/favicon.ico")
-	}
+		c.Header("Content-Type", "image/x-icon")
+		c.Data(http.StatusOK, "image/x-icon", data)
+	})
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
