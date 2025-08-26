@@ -60,15 +60,18 @@ func InputSanitizer() gin.HandlerFunc {
 			return
 		}
 		
-		if err := c.Request.ParseForm(); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid form data"})
-			c.Abort()
-			return
-		}
-		
-		for key, values := range c.Request.Form {
-			for i, value := range values {
-				c.Request.Form[key][i] = strings.TrimSpace(value)
+		// Only parse forms for POST, PUT, PATCH requests with form data
+		if c.Request.Method != "GET" && c.Request.Method != "HEAD" {
+			if err := c.Request.ParseForm(); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid form data"})
+				c.Abort()
+				return
+			}
+			
+			for key, values := range c.Request.Form {
+				for i, value := range values {
+					c.Request.Form[key][i] = strings.TrimSpace(value)
+				}
 			}
 		}
 		
