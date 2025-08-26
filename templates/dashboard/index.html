@@ -1,201 +1,203 @@
 {{define "content"}}
-<div class="row">
-    <!-- Statistics Cards -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Users
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.TotalUsers}}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+<!-- Maritime Dashboard Metrics -->
+<div class="grid-dashboard mb-8">
+    <!-- Total Users -->
+    <div class="metric-card">
+        <div class="flex items-center justify-between mb-2">
+            <div class="metric-label text-slate-500">Total Users</div>
+            <svg class="w-8 h-8 text-navy-300" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+            </svg>
         </div>
+        <div class="metric-value">{{.Stats.TotalUsers}}</div>
+        <div class="text-sm text-slate-600 mt-1">System users</div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Active Users
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.ActiveUsers}}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- Active Users -->
+    <div class="metric-card">
+        <div class="flex items-center justify-between mb-2">
+            <div class="metric-label text-slate-500">Active Users</div>
+            <svg class="w-8 h-8 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
         </div>
+        <div class="metric-value text-green-600">{{.Stats.ActiveUsers}}</div>
+        <div class="text-sm text-slate-600 mt-1">Currently enabled</div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Login Sessions Today
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.SessionsToday}}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-sign-in-alt fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- Today's Sessions -->
+    <div class="metric-card">
+        <div class="flex items-center justify-between mb-2">
+            <div class="metric-label text-slate-500">Sessions Today</div>
+            <svg class="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
         </div>
+        <div class="metric-value text-blue-600">{{.Stats.SessionsToday}}</div>
+        <div class="text-sm text-slate-600 mt-1">Login sessions</div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Failed Logins (24h)
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.FailedLoginsToday}}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- Failed Logins -->
+    <div class="metric-card">
+        <div class="flex items-center justify-between mb-2">
+            <div class="metric-label text-slate-500">Failed Logins</div>
+            <svg class="w-8 h-8 text-coral-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
         </div>
+        <div class="metric-value text-coral-600">{{.Stats.FailedLoginsToday}}</div>
+        <div class="text-sm text-slate-600 mt-1">Last 24 hours</div>
     </div>
 </div>
 
-<div class="row">
+<!-- Main Dashboard Content -->
+<div class="grid-content">
     <!-- Recent Activity -->
-    <div class="col-lg-8 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-history"></i> Recent Activity
-                </h6>
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-minimal shadow-minimal border border-slate-200">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h2 class="text-lg font-semibold text-navy-900">Recent Activity</h2>
+                <p class="text-sm text-slate-500 mt-1">Latest system events and user actions</p>
             </div>
-            <div class="card-body">
+            <div class="p-6">
                 {{if .RecentActivities}}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Activity</th>
-                                <th>IP Address</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .RecentActivities}}
-                            <tr>
-                                <td><small>{{.PerformedAt.Format "Jan 02, 15:04"}}</small></td>
-                                <td>
+                <div class="space-y-4">
+                    {{range .RecentActivities}}
+                    <div class="flex items-center justify-between py-3 border-b border-slate-100 last:border-b-0">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                {{if eq .ActivityType "login"}}
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                {{else if eq .ActivityType "logout"}}
+                                    <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                {{else if eq .ActivityType "failed_login"}}
+                                    <div class="w-8 h-8 bg-coral-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-coral-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                {{else}}
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                {{end}}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-slate-900">
                                     {{if .User}}
-                                        <small>{{.User.Name}}</small>
+                                        {{.User.Name}}
                                     {{else}}
-                                        <small class="text-muted">Unknown</small>
+                                        Unknown User
                                     {{end}}
-                                </td>
-                                <td>
-                                    <small>
-                                        {{if eq .ActivityType "login"}}
-                                            <span class="badge bg-success">Login</span>
-                                        {{else if eq .ActivityType "logout"}}
-                                            <span class="badge bg-secondary">Logout</span>
-                                        {{else if eq .ActivityType "failed_login"}}
-                                            <span class="badge bg-danger">Failed Login</span>
-                                        {{else if eq .ActivityType "password_change"}}
-                                            <span class="badge bg-warning">Password Change</span>
-                                        {{else}}
-                                            <span class="badge bg-info">{{.ActivityType}}</span>
-                                        {{end}}
-                                    </small>
-                                </td>
-                                <td><small class="text-muted">{{.IPAddress}}</small></td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
+                                </div>
+                                <div class="text-xs text-slate-500">
+                                    {{if eq .ActivityType "login"}}Signed in
+                                    {{else if eq .ActivityType "logout"}}Signed out
+                                    {{else if eq .ActivityType "failed_login"}}Failed login attempt
+                                    {{else if eq .ActivityType "password_change"}}Changed password
+                                    {{else}}{{.ActivityType}}{{end}}
+                                    • {{.IPAddress}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-500">
+                            {{.PerformedAt.Format "Jan 02, 15:04"}}
+                        </div>
+                    </div>
+                    {{end}}
                 </div>
-                <div class="text-center mt-3">
-                    <a href="/activities" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-eye"></i> View All Activities
+                <div class="mt-6 text-center">
+                    <a href="/activities" class="btn-outline">
+                        View All Activities
                     </a>
                 </div>
                 {{else}}
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-history fa-3x mb-3"></i>
-                    <p>No recent activity to display</p>
+                <div class="text-center py-12">
+                    <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-slate-500 text-sm">No recent activity to display</p>
                 </div>
                 {{end}}
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions & User Info -->
-    <div class="col-lg-4 mb-4">
-        <!-- User Profile Card -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-user"></i> Your Profile
-                </h6>
+    <!-- Quick Actions Sidebar -->
+    <div class="space-y-6">
+        <!-- Profile Summary -->
+        <div class="bg-white rounded-minimal shadow-minimal border border-slate-200">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h3 class="text-lg font-semibold text-navy-900">Your Profile</h3>
             </div>
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="fas fa-user-circle fa-5x text-gray-400"></i>
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-navy-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-xl font-semibold text-navy-900">U</span>
                 </div>
-                <h5>{{.User.Name}}</h5>
-                <p class="text-muted">{{.User.Email}}</p>
-                <span class="badge bg-{{if eq .User.Role 0}}danger{{else if eq .User.Role 1}}warning{{else}}info{{end}}">
-                    {{if eq .User.Role 0}}Administrator{{else if eq .User.Role 1}}Manager{{else}}Salesperson{{end}}
-                </span>
+                <h4 class="text-lg font-medium text-slate-900 mb-1">{{.User.Name}}</h4>
+                <p class="text-sm text-slate-600 mb-3">{{.User.Email}}</p>
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                    {{if eq .User.Role 0}}bg-coral-100 text-coral-800
+                    {{else if eq .User.Role 1}}bg-yellow-100 text-yellow-800
+                    {{else}}bg-blue-100 text-blue-800{{end}}">
+                    {{if eq .User.Role 0}}Administrator
+                    {{else if eq .User.Role 1}}Manager
+                    {{else}}Salesperson{{end}}
+                </div>
                 {{if .User.Company}}
-                <p class="text-muted mt-2">
-                    <i class="fas fa-building"></i> {{.User.Company}}
-                </p>
+                <p class="text-sm text-slate-500 mt-3">{{.User.Company}}</p>
                 {{end}}
-                <div class="mt-3">
-                    <a href="/profile" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit"></i> Edit Profile
+                <div class="mt-4">
+                    <a href="/profile" class="btn-outline btn-sm w-full justify-center">
+                        Edit Profile
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-bolt"></i> Quick Actions
-                </h6>
+        <div class="bg-white rounded-minimal shadow-minimal border border-slate-200">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h3 class="text-lg font-semibold text-navy-900">Quick Actions</h3>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
+            <div class="p-6">
+                <div class="space-y-3">
                     {{if or (eq .User.Role 0) (eq .User.Role 1)}}
-                    <a href="/users/new" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-user-plus"></i> Add New User
+                    <a href="/users/new" class="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 rounded-minimal hover:bg-slate-100 transition-colors duration-150">
+                        <svg class="w-5 h-5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
+                        </svg>
+                        Add New User
                     </a>
-                    <a href="/users" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-users"></i> Manage Users
+                    <a href="/users" class="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 rounded-minimal hover:bg-slate-100 transition-colors duration-150">
+                        <svg class="w-5 h-5 mr-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                        </svg>
+                        Manage Users
                     </a>
                     {{end}}
-                    <a href="/profile/password" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-key"></i> Change Password
+                    <a href="/profile/password" class="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 rounded-minimal hover:bg-slate-100 transition-colors duration-150">
+                        <svg class="w-5 h-5 mr-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Change Password
                     </a>
                     {{if or (eq .User.Role 0) (eq .User.Role 1)}}
-                    <a href="/activities" class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-history"></i> View Activity Log
+                    <a href="/activities" class="flex items-center px-4 py-3 text-sm font-medium text-slate-700 bg-slate-50 rounded-minimal hover:bg-slate-100 transition-colors duration-150">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                        Activity Log
                     </a>
                     {{end}}
                 </div>

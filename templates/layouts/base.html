@@ -5,164 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}} - ASM Tracker</title>
     
-    <!-- Resource hints for performance -->
-    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <!-- Minimal performance-optimized CSS -->
+    <link href="/static/css/app.css" rel="stylesheet">
     
-    <!-- Critical CSS inlined to prevent render blocking -->
+    <!-- Critical CSS for immediate rendering -->
     <style>
         /* Critical above-the-fold styles */
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; 
-            margin: 0; 
-            background-color: #f8f9fa; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            background-color: #fafafa;
+            color: #1a202c;
+            line-height: 1.6;
         }
         .sidebar { 
-            min-height: 100vh; 
-            background-color: #343a40; 
+            min-height: 100vh;
+            background-color: #1a365d;
         }
         .main-content { 
-            background-color: #f8f9fa; 
-            min-height: 100vh; 
-        }
-        .navbar-brand { 
-            font-weight: 700; 
+            background-color: #fafafa;
+            min-height: 100vh;
         }
         .login-container { 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></noscript>
-    
-    <!-- Load Font Awesome asynchronously -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    
-    <!-- Custom CSS loaded asynchronously -->
-    <link href="/static/css/app.css" rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;">
-    <noscript><link href="/static/css/app.css" rel="stylesheet"></noscript>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            {{if .User}}
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <div class="text-center text-white py-3">
-                        <h5><i class="fas fa-anchor"></i> ASM Tracker</h5>
-                        <small class="text-muted">Maritime Management</small>
+<body class="main-layout">
+    <div class="flex min-h-screen bg-background">
+        {{if .User}}
+        <!-- Maritime Navigation Sidebar -->
+        <nav class="sidebar w-64 bg-navy-900 text-white flex-shrink-0 hidden md:flex md:flex-col">
+            <div class="p-6">
+                <!-- Brand -->
+                <div class="text-center mb-8">
+                    <h1 class="text-xl font-semibold text-white mb-1">ASM Tracker</h1>
+                    <p class="text-navy-300 text-sm">Maritime Management</p>
+                </div>
+                
+                <!-- Navigation Links -->
+                <nav class="space-y-2">
+                    <a href="/" class="nav-item {{if eq .ActiveNav "dashboard"}}active{{end}}">
+                        Dashboard
+                    </a>
+                    <a href="/users" class="nav-item {{if eq .ActiveNav "users"}}active{{end}}">
+                        User Management
+                    </a>
+                    {{if or (eq .User.Role 0) (eq .User.Role 1)}}
+                    <a href="/activities" class="nav-item {{if eq .ActiveNav "activities"}}active{{end}}">
+                        Activity Log
+                    </a>
+                    {{end}}
+                    <a href="/profile" class="nav-item {{if eq .ActiveNav "profile"}}active{{end}}">
+                        My Profile
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- User Menu -->
+            <div class="mt-auto p-6">
+                <div class="border-t border-navy-800 pt-4">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-8 h-8 bg-navy-700 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-white">U</span>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-white">{{.User.Name}}</div>
+                            <div class="text-xs text-navy-300">
+                                {{if eq .User.Role 0}}Administrator{{else if eq .User.Role 1}}Manager{{else}}Salesperson{{end}}
+                            </div>
+                        </div>
                     </div>
-                    
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{if eq .ActiveNav "dashboard"}}active{{end}}" href="/">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{if eq .ActiveNav "users"}}active{{end}}" href="/users">
-                                <i class="fas fa-users"></i> User Management
-                            </a>
-                        </li>
-                        {{if or (eq .User.Role 0) (eq .User.Role 1)}}
-                        <li class="nav-item">
-                            <a class="nav-link {{if eq .ActiveNav "activities"}}active{{end}}" href="/activities">
-                                <i class="fas fa-history"></i> Activity Log
-                            </a>
-                        </li>
-                        {{end}}
-                        <li class="nav-item">
-                            <a class="nav-link {{if eq .ActiveNav "profile"}}active{{end}}" href="/profile">
-                                <i class="fas fa-user"></i> My Profile
-                            </a>
-                        </li>
-                    </ul>
-                    
-                    <hr class="text-secondary">
-                    
-                    <div class="dropdown pb-4">
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-2"></i>
-                            <strong>{{.User.Name}}</strong>
+                    <div class="space-y-1">
+                        <a href="/profile" class="block px-3 py-2 text-sm text-navy-300 hover:text-white hover:bg-navy-800 rounded transition-colors duration-150">
+                            Profile Settings
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="/profile/password">Change Password</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/logout">Sign out</a></li>
-                        </ul>
+                        <a href="/profile/password" class="block px-3 py-2 text-sm text-navy-300 hover:text-white hover:bg-navy-800 rounded transition-colors duration-150">
+                            Change Password
+                        </a>
+                        <a href="/logout" class="block px-3 py-2 text-sm text-navy-300 hover:text-white hover:bg-navy-800 rounded transition-colors duration-150">
+                            Sign Out
+                        </a>
                     </div>
                 </div>
+            </div>
+        </nav>
+        
+        <!-- Mobile Navigation Toggle -->
+        <div class="md:hidden fixed top-0 left-0 right-0 z-50 bg-navy-900 px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-white font-semibold">ASM Tracker</div>
+                <button id="mobile-nav-toggle" class="text-white hover:text-navy-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Overlay -->
+        <div id="mobile-nav-overlay" class="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50 hidden">
+            <nav class="fixed top-0 left-0 w-64 h-full bg-navy-900 text-white transform -translate-x-full transition-transform duration-300" id="mobile-nav">
+                <div class="p-6">
+                    <div class="text-center mb-8">
+                        <h1 class="text-xl font-semibold text-white mb-1">ASM Tracker</h1>
+                        <p class="text-navy-300 text-sm">Maritime Management</p>
+                    </div>
+                    <nav class="space-y-2">
+                        <a href="/" class="nav-item {{if eq .ActiveNav "dashboard"}}active{{end}}">
+                            Dashboard
+                        </a>
+                        <a href="/users" class="nav-item {{if eq .ActiveNav "users"}}active{{end}}">
+                            User Management
+                        </a>
+                        {{if or (eq .User.Role 0) (eq .User.Role 1)}}
+                        <a href="/activities" class="nav-item {{if eq .ActiveNav "activities"}}active{{end}}">
+                            Activity Log
+                        </a>
+                        {{end}}
+                        <a href="/profile" class="nav-item {{if eq .ActiveNav "profile"}}active{{end}}">
+                            My Profile
+                        </a>
+                        <hr class="border-navy-800 my-4">
+                        <a href="/profile/password" class="nav-item">
+                            Change Password
+                        </a>
+                        <a href="/logout" class="nav-item">
+                            Sign Out
+                        </a>
+                    </nav>
+                </div>
             </nav>
-            {{end}}
+        </div>
+        {{end}}
 
-            <!-- Main content -->
-            <main class="{{if .User}}col-md-9 ms-sm-auto col-lg-10 px-md-4{{else}}col-12{{end}} main-content">
-                {{if .User}}
-                <!-- Header -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">{{.Title}}</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="btn-group me-2">
-                            <small class="text-muted">
-                                Welcome back, {{.User.Name}} 
-                                <span class="badge bg-{{if eq .User.Role 0}}danger{{else if eq .User.Role 1}}warning{{else}}info{{end}} ms-1">
-                                    {{if eq .User.Role 0}}Admin{{else if eq .User.Role 1}}Manager{{else}}Sales{{end}}
-                                </span>
-                            </small>
+        <!-- Main Content -->
+        <main class="flex-1 {{if .User}}md:ml-0{{else}}w-full{{end}}">
+            {{if .User}}
+            <!-- Mobile Header Spacer -->
+            <div class="md:hidden h-16"></div>
+            
+            <!-- Page Header -->
+            <div class="bg-white border-b border-slate-200">
+                <div class="content-container">
+                    <div class="page-header">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="page-title">{{.Title}}</h1>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="text-sm text-slate-500">Welcome back, {{.User.Name}}</span>
+                                    <span class="badge {{if eq .User.Role 0}}badge-admin{{else if eq .User.Role 1}}badge-manager{{else}}bg-blue-100 text-blue-800{{end}}">
+                                        {{if eq .User.Role 0}}Admin{{else if eq .User.Role 1}}Manager{{else}}Sales{{end}}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {{end}}
+            </div>
+            {{end}}
 
+            <!-- Page Content -->
+            <div class="{{if .User}}content-container{{else}}min-h-screen{{end}}">
                 <!-- Flash Messages -->
                 {{template "partials/flash" .}}
 
-                <!-- Page Content -->
+                <!-- Main Content -->
                 {{template "content" .}}
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 
-    <!-- Preload JavaScript for better performance -->
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" as="script">
-    <link rel="preload" href="/static/js/app.js" as="script">
-    
-    <!-- Load JavaScript asynchronously -->
-    <script async src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Minimal JavaScript for maritime interface -->
     <script defer src="/static/js/app.js"></script>
     
     <!-- Critical inline JavaScript for immediate functionality -->
     <script>
         (function() {
-            // Performance observer for Core Web Vitals
-            if ('PerformanceObserver' in window) {
-                const po = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries()) {
-                        if (entry.entryType === 'largest-contentful-paint') {
-                            console.log('LCP:', entry.startTime);
-                        }
-                        if (entry.entryType === 'first-input') {
-                            console.log('FID:', entry.processingStart - entry.startTime);
-                        }
-                        if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
-                            console.log('CLS:', entry.value);
-                        }
-                    }
-                });
-                
-                po.observe({entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift']});
-            }
-
             // Optimized DOM ready function
             function domReady(fn) {
                 if (document.readyState === 'loading') {
@@ -172,18 +194,37 @@
                 }
             }
 
-            // Auto-hide flash messages after 5 seconds
             domReady(function() {
+                // Mobile navigation toggle
+                const mobileToggle = document.getElementById('mobile-nav-toggle');
+                const mobileOverlay = document.getElementById('mobile-nav-overlay');
+                const mobileNav = document.getElementById('mobile-nav');
+                
+                if (mobileToggle && mobileOverlay && mobileNav) {
+                    mobileToggle.addEventListener('click', function() {
+                        mobileOverlay.classList.remove('hidden');
+                        setTimeout(() => {
+                            mobileNav.classList.remove('-translate-x-full');
+                        }, 10);
+                    });
+                    
+                    mobileOverlay.addEventListener('click', function(e) {
+                        if (e.target === mobileOverlay) {
+                            mobileNav.classList.add('-translate-x-full');
+                            setTimeout(() => {
+                                mobileOverlay.classList.add('hidden');
+                            }, 300);
+                        }
+                    });
+                }
+
+                // Auto-hide flash messages after 5 seconds
                 setTimeout(function() {
                     const alerts = document.querySelectorAll('.alert');
                     alerts.forEach(function(alert) {
-                        if (window.bootstrap && bootstrap.Alert) {
-                            const bsAlert = new bootstrap.Alert(alert);
-                            bsAlert.close();
-                        } else {
-                            alert.style.opacity = '0';
-                            setTimeout(() => alert.remove(), 300);
-                        }
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateY(-1rem)';
+                        setTimeout(() => alert.remove(), 300);
                     });
                 }, 5000);
 
@@ -195,6 +236,12 @@
                         }
                     });
                 });
+                
+                // Add fade-in animation to main content
+                const mainContent = document.querySelector('main');
+                if (mainContent) {
+                    mainContent.classList.add('fade-in');
+                }
             });
         })();
     </script>
