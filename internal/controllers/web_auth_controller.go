@@ -20,6 +20,7 @@ func NewWebAuthController(authService *services.AuthService) *WebAuthController 
 }
 
 func (ac *WebAuthController) ShowLogin(c *gin.Context) {
+	// Try to render template, fall back to simple HTML if template fails
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"Title": "Login",
 		"Errors": make(map[string]string),
