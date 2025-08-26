@@ -92,7 +92,7 @@ jobs:
 
             # Rollback
             echo "🔄 Rolling back to previous version..."
-            if [ -f site1.backup.* ]; then
+            if ls site1.backup.* 1> /dev/null 2>&1; then
               latest_backup=$(ls -t site1.backup.* | head -1)
               cp "$latest_backup" site1
               echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl start site1

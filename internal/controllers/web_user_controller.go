@@ -81,7 +81,7 @@ func (uc *WebUserController) ListUsers(c *gin.Context) {
 		"FilterStatus": filterStatus,
 	}
 
-	c.HTML(http.StatusOK, "users/index.html", data)
+	c.HTML(http.StatusOK, "base.html", data)
 }
 
 func (uc *WebUserController) ShowUser(c *gin.Context) {
@@ -134,7 +134,7 @@ func (uc *WebUserController) ShowUser(c *gin.Context) {
 		"PasswordResets": passwordResets,
 	}
 
-	c.HTML(http.StatusOK, "users/show.html", data)
+	c.HTML(http.StatusOK, "base.html", data)
 }
 
 func (uc *WebUserController) ShowCreateUser(c *gin.Context) {
@@ -153,7 +153,7 @@ func (uc *WebUserController) ShowCreateUser(c *gin.Context) {
 		"FormData": make(map[string]interface{}),
 	}
 
-	c.HTML(http.StatusOK, "users/form.html", data)
+	c.HTML(http.StatusOK, "base.html", data)
 }
 
 func (uc *WebUserController) HandleCreateUser(c *gin.Context) {
@@ -229,7 +229,7 @@ func (uc *WebUserController) HandleCreateUser(c *gin.Context) {
 			"Errors":   errors,
 			"FormData": formData,
 		}
-		c.HTML(http.StatusBadRequest, "users/form.html", data)
+		c.HTML(http.StatusBadRequest, "base.html", data)
 		return
 	}
 
@@ -255,7 +255,7 @@ func (uc *WebUserController) HandleCreateUser(c *gin.Context) {
 			"Errors":   errors,
 			"FormData": formData,
 		}
-		c.HTML(http.StatusInternalServerError, "users/form.html", data)
+		c.HTML(http.StatusInternalServerError, "base.html", data)
 		return
 	}
 
@@ -269,7 +269,7 @@ func (uc *WebUserController) HandleCreateUser(c *gin.Context) {
 			"Errors":   errors,
 			"FormData": formData,
 		}
-		c.HTML(http.StatusInternalServerError, "users/form.html", data)
+		c.HTML(http.StatusInternalServerError, "base.html", data)
 		return
 	}
 
@@ -321,7 +321,7 @@ func (uc *WebUserController) ShowEditUser(c *gin.Context) {
 		"Errors":   make(map[string]string),
 	}
 
-	c.HTML(http.StatusOK, "users/form.html", data)
+	c.HTML(http.StatusOK, "base.html", data)
 }
 
 func (uc *WebUserController) HandleEditUser(c *gin.Context) {
@@ -407,7 +407,7 @@ func (uc *WebUserController) HandleEditUser(c *gin.Context) {
 			"EditUser": editUser,
 			"Errors":   errors,
 		}
-		c.HTML(http.StatusBadRequest, "users/form.html", data)
+		c.HTML(http.StatusBadRequest, "base.html", data)
 		return
 	}
 
@@ -433,7 +433,7 @@ func (uc *WebUserController) HandleEditUser(c *gin.Context) {
 			"EditUser": editUser,
 			"Errors":   errors,
 		}
-		c.HTML(http.StatusInternalServerError, "users/form.html", data)
+		c.HTML(http.StatusInternalServerError, "base.html", data)
 		return
 	}
 

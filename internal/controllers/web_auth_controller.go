@@ -133,11 +133,12 @@ func (ac *WebAuthController) ShowProfile(c *gin.Context) {
 		return
 	}
 
-	data := gin.H{
+	c.HTML(http.StatusOK, "base.html", gin.H{
+		"Title":    "My Profile",
+		"User":     user,
+		"ActiveNav": "profile",
 		"ViewUser": user,
-	}
-
-	middleware.RenderPage(c, "users/show.html", "My Profile", data)
+	})
 }
 
 func (ac *WebAuthController) ShowChangePassword(c *gin.Context) {
@@ -147,11 +148,12 @@ func (ac *WebAuthController) ShowChangePassword(c *gin.Context) {
 		return
 	}
 
-	data := gin.H{
-		"Errors": make(map[string]string),
-	}
-
-	middleware.RenderPage(c, "auth/change_password.html", "Change Password", data)
+	c.HTML(http.StatusOK, "base.html", gin.H{
+		"Title":    "Change Password",
+		"User":     user,
+		"ActiveNav": "profile",
+		"Errors":   make(map[string]string),
+	})
 }
 
 func (ac *WebAuthController) HandleChangePassword(c *gin.Context) {
@@ -181,22 +183,24 @@ func (ac *WebAuthController) HandleChangePassword(c *gin.Context) {
 	}
 
 	if len(errors) > 0 {
-		data := gin.H{
-			"Errors": errors,
-		}
-		c.Status(http.StatusBadRequest)
-		middleware.RenderPage(c, "auth/change_password.html", "Change Password", data)
+		c.HTML(http.StatusBadRequest, "base.html", gin.H{
+			"Title":    "Change Password",
+			"User":     user,
+			"ActiveNav": "profile",
+			"Errors":   errors,
+		})
 		return
 	}
 
 	err := ac.authService.ChangePassword(user.ID, currentPassword, newPassword)
 	if err != nil {
 		errors["General"] = err.Error()
-		data := gin.H{
-			"Errors": errors,
-		}
-		c.Status(http.StatusBadRequest)
-		middleware.RenderPage(c, "auth/change_password.html", "Change Password", data)
+		c.HTML(http.StatusBadRequest, "base.html", gin.H{
+			"Title":    "Change Password",
+			"User":     user,
+			"ActiveNav": "profile",
+			"Errors":   errors,
+		})
 		return
 	}
 

@@ -59,13 +59,11 @@ func (dc *WebDashboardController) ShowDashboard(c *gin.Context) {
 	// Get recent activities
 	recentActivities, _ := dc.activityService.GetAllActivities(10)
 
-	data := gin.H{
-		"Title": "Dashboard",
-		"User": user,
-		"ActiveNav": "dashboard",
-		"Stats": stats,
+	c.HTML(200, "base.html", gin.H{
+		"Title":       "Dashboard",
+		"User":        user,
+		"ActiveNav":   "dashboard",
+		"Stats":       stats,
 		"RecentActivities": recentActivities,
-	}
-
-	c.HTML(200, "dashboard/index.html", data)
+	})
 }
