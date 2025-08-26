@@ -2,6 +2,8 @@ package app
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"alsafwanmarine.com/todo-app/internal/config"
@@ -68,12 +70,32 @@ func New(dbPath string) (*Application, error) {
 }
 
 func (app *Application) SetupRoutes(r *gin.Engine) {
-	// Load HTML templates
-	r.LoadHTMLGlob("templates/**/*.html")
+	// Try to load HTML templates, but don't fail if they don't exist
+	templatePattern := "templates/**/*.html"
+	if _, err := os.Stat("./templates"); err == nil {
+		// Templates directory exists, try to load templates
+		// Use a more comprehensive search to check if any templates exist
+		matches, err := filepath.Glob("templates/*/*.html")
+		if err == nil && len(matches) > 0 {
+			r.LoadHTMLGlob(templatePattern)
+			log.Printf("Loaded template files from templates directory")
+		} else {
+			log.Printf("Templates directory exists but no HTML files found")
+		}
+	} else {
+		log.Printf("Templates directory not found: %v", err)
+	}
 	
-	// Serve static files
-	r.Static("/static", "./static")
-	r.StaticFile("/favicon.ico", "./static/favicon.ico")
+	// Try to serve static files, but don't fail if directory doesn't exist
+	if _, err := os.Stat("./static"); err == nil {
+		r.Static("/static", "./static")
+	} else {
+		log.Printf("Static directory not found: %v", err)
+	}
+	
+	if _, err := os.Stat("./static/favicon.ico"); err == nil {
+		r.StaticFile("/favicon.ico", "./static/favicon.ico")
+	}
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())

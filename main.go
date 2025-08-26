@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"alsafwanmarine.com/todo-app/internal/app"
 	"github.com/gin-gonic/gin"
@@ -43,18 +44,36 @@ func main() {
 	log.Printf("Starting ASM Tracker...")
 	log.Printf("Database path: %s", dbPath)
 	log.Printf("Port: %s", port)
+	log.Printf("Working directory: %s", func() string { wd, _ := os.Getwd(); return wd }())
+	
+	// Check if we can write to the data directory
+	testFile := filepath.Join("data", "test")
+	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+		log.Printf("Warning: Cannot write to data directory: %v", err)
+	} else {
+		os.Remove(testFile)
+		log.Printf("Data directory is writable")
+	}
 	
 	application, err := app.New(dbPath)
 	if err != nil {
-		log.Fatal("Failed to initialize application:", err)
+		log.Fatalf("Failed to initialize application: %v", err)
 	}
 	defer application.Close()
 
 	r := gin.Default()
+	
+	// Add a simple test endpoint that always works
+	r.GET("/test", func(c *gin.Context) {
+		c.String(200, "OK")
+	})
+	
 	application.SetupRoutes(r)
 
+	log.Printf("ASM Tracker routes configured successfully")
 	log.Printf("ASM Tracker User Management System starting on port %s", port)
+	
 	if err := r.Run(":" + port); err != nil {
-		log.Fatal("Failed to start server:", err)
+		log.Fatalf("Failed to start server on port %s: %v", port, err)
 	}
 }
