@@ -42,13 +42,25 @@ jobs:
 
           echo "⏳ Waiting for new binary upload..."
 
-    - name: Upload new binary
+    - name: Upload new binary and assets
       run: |
-        # Install sshpass and use scp to copy the binary
+        # Install sshpass and use scp to copy the binary and assets
         sudo apt-get update && sudo apt-get install -y sshpass
+        
+        # Upload binary
         sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no \
           todo-app-linux \
           "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/todo-app-linux.new"
+        
+        # Upload templates directory
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -r -o StrictHostKeyChecking=no \
+          templates \
+          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/"
+        
+        # Upload static directory  
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -r -o StrictHostKeyChecking=no \
+          static \
+          "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/alsafwan/alsafwanmarine-project/applications/site1/"
 
     - name: Replace binary and restart service
       uses: appleboy/ssh-action@v1.0.3
